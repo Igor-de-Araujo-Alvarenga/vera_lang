@@ -1,0 +1,7 @@
+﻿program main
+{
+	if x > 0 
+	{
+		return 40;
+	}
+}

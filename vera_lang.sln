@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vera_lang", "vera_lang\vera_lang.csproj", "{B05066CF-D36F-49D0-913E-E0334809B88F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lexer", "Lexer\Lexer.csproj", "{95E8469C-A62F-49E5-A64B-E535CAC3FD34}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B05066CF-D36F-49D0-913E-E0334809B88F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B05066CF-D36F-49D0-913E-E0334809B88F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B05066CF-D36F-49D0-913E-E0334809B88F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B05066CF-D36F-49D0-913E-E0334809B88F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95E8469C-A62F-49E5-A64B-E535CAC3FD34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95E8469C-A62F-49E5-A64B-E535CAC3FD34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95E8469C-A62F-49E5-A64B-E535CAC3FD34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95E8469C-A62F-49E5-A64B-E535CAC3FD34}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7EF5E1EC-5E3A-46A3-A484-3E013DD480B5}
+	EndGlobalSection
+EndGlobal
