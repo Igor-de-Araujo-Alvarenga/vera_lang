@@ -1,0 +1,10 @@
+WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
+
+program    = { statement* }
+statement  = { assignment | expression }
+assignment = { identifier ~ "=" ~ expression }
+expression = { term ~ (("+" | "-") ~ term)* }
+term       = { factor ~ (("*" | "/") ~ factor)* }
+factor     = { number | identifier | "(" ~ expression ~ ")" }
+number     = @{ ASCII_DIGIT+ }
+identifier = @{ ASCII_ALPHANUMERIC+ }
