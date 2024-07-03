@@ -1,0 +1,26 @@
+letters = a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;
+digits  = 0,1,2,3,4,5,6,7,8,9;
+boolean = true, false;
+math_operators = *,+,-,/;
+logic_operators = >= , >, <, <=, ==, !=;
+identifier = letter (letter | digit)*;
+type = "string", "integer", "boolean";
+variable = type identifier;
+increment = digit "++" | digit "--";
+assignment = variable = letter | digit+ | expression;
+expression = identifier
+    | ( identifier math_operators identifier )
+    | ( identifier logic_operators identifier )
+    | ( expression )
+    | math_operators expression;
+conditions = if ( expression ) block
+    | if (expression) block else block;
+arguments = variable ( , variable )*;
+function_define = type identifier ( arguments ) block;
+function_call = identifier ( identifier ( , identifier )* ) ";";
+loop = for (assignment; expression; increment) block;
+statements = function_define | function_call | assignment | conditions | loop;
+steps = statements*;
+block = { steps };
+main = block;
+start = main;
