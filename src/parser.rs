@@ -6,6 +6,12 @@ pub struct Parser{
 }
 #[derive(Debug, Clone)]
 pub enum ASTNode {
+    Identifier(Box<Token>),
+    Declaration {
+        data_type: Token,
+        identifier: Token,
+        value: Box<ASTNode>,
+    },
     Number(i32),
     BinaryOp {
         left: Box<ASTNode>,
@@ -13,7 +19,7 @@ pub enum ASTNode {
         right: Box<ASTNode>
     },
     Main {
-        body: Box<ASTNode>
+        body: Vec<ASTNode>
     }
 }
 
@@ -21,7 +27,7 @@ impl Parser
 {
     pub fn new(tokens: Vec<Token>) -> Self
     {
-        Parser{ tokens, current: 0}
+        Parser { tokens, current: 0 }
     }
 
     pub fn parse(&mut self) -> ASTNode
@@ -36,11 +42,24 @@ impl Parser
     {
         self.consume(&Token::LParen);
         self.consume(&Token::RParen);
+        self.consume(&Token::LineBreak);
         self.consume(&Token::LBrace);
-        let body = self.parse_expression();
+        self.consume(&Token::LineBreak);
+        let mut body = Vec::new();
+        while !self.check(&Token::RBrace) {
+            if let node = self.parse_declaration() {
+                body.push(node);
+            } else {
+                let expression = self.parse_expression();
+                body.push(expression);
+            }
+            self.consume(&Token::LineBreak);
+        }
+
         self.consume(&Token::RBrace);
+
         ASTNode::Main {
-            body: Box::new(body)
+            body: body,
         }
     }
     fn parse_expression(&mut self) -> ASTNode
@@ -50,7 +69,7 @@ impl Parser
         {
             let op = self.previous().clone();
             let right = self.parse_term();
-            node = ASTNode::BinaryOp{
+            node = ASTNode::BinaryOp {
                 left: Box::new(node),
                 op,
                 right: Box::new(right),
@@ -66,7 +85,7 @@ impl Parser
             let op = self.previous().clone();
             let right = self.parse_factor();
             node = ASTNode::BinaryOp {
-                left : Box::new(node),
+                left: Box::new(node),
                 op,
                 right: Box::new(right)
             };
@@ -76,7 +95,7 @@ impl Parser
 
     fn parse_factor(&mut self) -> ASTNode
     {
-        if self.match_token(&[Token::LParen]){
+        if self.match_token(&[Token::LParen]) {
             let expr = self.parse_expression();
             self.consume(&Token::RParen);
             expr
@@ -87,6 +106,22 @@ impl Parser
         }
     }
 
+    fn parse_declaration(&mut self) -> ASTNode {
+        let data_type = self.tokens[self.current].clone();
+        self.advance();
+        let identifier = if let Token::Identifier(_) = self.peek() {
+            self.advance().clone()
+        } else {
+            panic!("Expected identifier");
+        };
+        self.consume(&Token::Assignment);
+        let value = self.parse_expression();
+        ASTNode::Declaration {
+            data_type,
+            identifier: identifier,
+            value: Box::new(value),
+        }
+    }
     fn match_token(&mut self, types: &[Token]) -> bool
     {
         for token_type in types {
@@ -116,7 +151,7 @@ impl Parser
         if self.check(token_type) {
             self.advance();
         } else {
-            panic!("Expected {:?}", token_type);
+            panic!("Expected {:?} but is found {:?}", token_type, self.peek());
         }
     }
 
