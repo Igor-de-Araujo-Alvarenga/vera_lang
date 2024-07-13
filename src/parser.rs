@@ -6,13 +6,14 @@ pub struct Parser{
 }
 #[derive(Debug, Clone)]
 pub enum ASTNode {
-    Identifier(Box<Token>),
+    Identifier(String),
     Declaration {
         data_type: Token,
         identifier: Token,
         value: Box<ASTNode>,
     },
     Number(i32),
+    LogicOperator(String),
     BinaryOp {
         left: Box<ASTNode>,
         op: Token,
@@ -20,7 +21,8 @@ pub enum ASTNode {
     },
     Main {
         body: Vec<ASTNode>
-    }
+    },
+    Print(Box<Token>)
 }
 
 impl Parser
@@ -49,15 +51,18 @@ impl Parser
         while !self.check(&Token::RBrace) {
             if let node = self.parse_declaration() {
                 body.push(node);
-            } else {
+            }
+            else if let logic_expression = self.parse_logic_expression()
+            {
+                body.push(logic_expression);
+            }
+            else {
                 let expression = self.parse_expression();
                 body.push(expression);
             }
             self.consume(&Token::LineBreak);
         }
-
         self.consume(&Token::RBrace);
-
         ASTNode::Main {
             body: body,
         }
@@ -76,6 +81,38 @@ impl Parser
             };
         }
         node
+    }
+    fn parse_logic_expression(&mut self) -> ASTNode
+    {
+        let mut node = self.parse_logic_factor();
+        while self.match_token(&[Token::LessThan, Token::LessEqualThan, Token::BiggerEqualThan,
+        Token::BiggerThan, Token::DifferentThan, Token::EqualThan])
+        {
+            let op = self.previous().clone();
+            let right = self.parse_logic_factor();
+            node = ASTNode::BinaryOp {
+                left : Box::new(node),
+                op,
+                right: Box::new(right)
+            }
+        }
+        node
+    }
+    fn parse_logic_factor(&mut self) -> ASTNode
+    {
+        if self.match_token(&[Token::LParen])
+        {
+            let logic_expr = self.parse_logic_expression();
+            self.consume(&Token::LParen);
+            logic_expr
+        }
+        else if let Token::Identifier(ident) = self.advance()
+        {
+            ASTNode::LogicOperator(ident.clone())
+        }
+        else {
+            panic!("Expected logic expression")
+        }
     }
     fn parse_term(&mut self) -> ASTNode
     {
@@ -109,11 +146,9 @@ impl Parser
     fn parse_declaration(&mut self) -> ASTNode {
         let data_type = self.tokens[self.current].clone();
         self.advance();
-        let identifier = if let Token::Identifier(_) = self.peek() {
-            self.advance().clone()
-        } else {
-            panic!("Expected identifier");
-        };
+        let identifier = self.peek().clone();
+        println!("identificador: {:?}", identifier);
+        self.advance();
         self.consume(&Token::Assignment);
         let value = self.parse_expression();
         ASTNode::Declaration {

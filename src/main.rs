@@ -49,7 +49,6 @@ fn main() {
                 .output()
                 .expect("Failed to execute test.exe");
 
-            // Print the output of executing the executable
             if execute_output.status.success() {
                 let stdout = String::from_utf8_lossy(&execute_output.stdout);
                 println!("Output: {}", stdout);

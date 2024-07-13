@@ -13,6 +13,7 @@ pub enum Token
     RParen,
     Number(String),
     Main,
+    Print,
     RBrace,
     LBrace,
     LineBreak,
@@ -23,7 +24,13 @@ pub enum Token
     StringType,
     IntegerType,
     BooleanType,
-    Assignment
+    Assignment,
+    LessThan,
+    LessEqualThan,
+    BiggerThan,
+    BiggerEqualThan,
+    EqualThan,
+    DifferentThan
 }
 impl Token {
     pub fn tokenizer(input: &str) -> Vec<Token> {
@@ -37,27 +44,11 @@ impl Token {
                 '+' | '-' | '*' | '/' => {
                     Token::tokenizer_math_operators(&mut tokens, &mut chars);
                 }
-                '(' | ')' | '{' | '}' | ' ' | '\t' | '\n' | '=' => {
+                '(' | ')' | '{' | '}' | ' ' | '\t' | '\n' | '=' | '<' | '>' | '!' => {
                     Token::tokenizer_symbols(&mut tokens, &mut chars);
                 }
                 _ if ch.is_alphabetic() => {
-                    Token::tokenizer_identifiers(&mut tokens, &mut chars);
-                }
-                'm' => {
-                    let mut ident = String::new();
-                    while let Some(&ch) = chars.peek() {
-                        if ch.is_alphabetic() {
-                            ident.push(ch);
-                            chars.next();
-                        } else {
-                            break;
-                        }
-                    }
-                    if ident == "main" {
-                        tokens.push(Token::Main);
-                    } else {
-                        panic!("Unexpected identifier: {}", ident);
-                    }
+                    Token::tokenizer_keywords(&mut tokens, &mut chars);
                 }
                 _ => panic!("Unexpected character: {}", ch),
             }
@@ -100,16 +91,50 @@ impl Token {
                 '}' => tokens.push(Token::RBrace),
                 ' ' | '\t' => {}
                 '\n' => tokens.push(Token::LineBreak),
-                '=' => tokens.push(Token::Assignment),
+                '=' => {
+                    let next_char = chars.peek().unwrap();
+                    if ch == '=' && next_char.to_owned() == '='{
+                        chars.next();
+                        tokens.push(Token::EqualThan);
+                    }
+                    else {
+                        tokens.push(Token::Assignment);
+                    }
+                },
+                '>' => {
+                    let next_char = chars.peek().unwrap();
+                    if ch == '>' && next_char.to_owned() == '='{
+                        chars.next();
+                        tokens.push(Token::BiggerEqualThan);
+                    }else {
+                        tokens.push(Token::BiggerThan);
+                    }
+                }
+                '<' => {
+                    let next_char = chars.peek().unwrap();
+                    if ch == '<' && next_char.to_owned() == '='{
+                        chars.next();
+                        tokens.push(Token::LessEqualThan);
+                    }else {
+                        tokens.push(Token::LessThan);
+                    }
+                }
+                '!' => {
+                    let next_char = chars.peek().unwrap();
+                    if ch == '!' && next_char.to_owned() == '='{
+                        chars.next();
+                        tokens.push(Token::DifferentThan);
+                    }
+                }
                 _ => (),
             }
         }
     }
 
-    fn tokenizer_identifiers(tokens: &mut Vec<Token>, chars: &mut std::iter::Peekable<std::str::Chars>) {
+    fn tokenizer_keywords(tokens: &mut Vec<Token>, chars: &mut std::iter::Peekable<std::str::Chars>) {
         let mut ident = String::new();
         while let Some(&ch) = chars.peek() {
-            if ch.is_alphabetic() {
+            if ch.is_alphanumeric() {
                 ident.push(ch);
                 chars.next();
             } else {
@@ -123,8 +148,7 @@ impl Token {
             "string" => tokens.push(Token::StringType),
             "integer" => tokens.push(Token::IntegerType),
             "boolean" => tokens.push(Token::BooleanType),
-            _ => tokens.push(Token::Identifier(ident)),
+            _ =>  tokens.push(Token::Identifier(ident)),
         }
     }
-
 }
