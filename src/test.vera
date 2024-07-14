@@ -1,4 +1,4 @@
 main()
 {
-  integer teste = (2 + 2 - (10 * 40 / 200))
+   print("ola mundo")
 }

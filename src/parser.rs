@@ -22,7 +22,7 @@ pub enum ASTNode {
     Main {
         body: Vec<ASTNode>
     },
-    Print(Box<Token>)
+    Print(String)
 }
 
 impl Parser
@@ -37,7 +37,7 @@ impl Parser
         if self.match_token(&[Token::Main]) {
             self.parse_main()
         } else {
-            self.parse_expression()
+            self.parse_expression().unwrap()
         }
     }
     fn parse_main(&mut self) -> ASTNode
@@ -49,16 +49,18 @@ impl Parser
         self.consume(&Token::LineBreak);
         let mut body = Vec::new();
         while !self.check(&Token::RBrace) {
-            if let node = self.parse_declaration() {
-                body.push(node);
-            }
-            else if let logic_expression = self.parse_logic_expression()
-            {
-                body.push(logic_expression);
-            }
-            else {
-                let expression = self.parse_expression();
-                body.push(expression);
+            match self.peek() {
+                Token::Print => {
+                    if let Some(print_stmt) = self.parse_print() {
+                        body.push(print_stmt);
+                    }
+                },
+                Token::IntegerType | Token::StringType | Token::BooleanType => {
+                    if let Some(declaration) = self.parse_declaration() {
+                        body.push(declaration);
+                    }
+                },//TODO: parse expressions
+                _ => { panic!("Unsupported feature.")}
             }
             self.consume(&Token::LineBreak);
         }
@@ -67,7 +69,7 @@ impl Parser
             body: body,
         }
     }
-    fn parse_expression(&mut self) -> ASTNode
+    fn parse_expression(&mut self) -> Option<ASTNode>
     {
         let mut node = self.parse_term();
         while self.match_token(&[Token::Plus, Token::Minus])
@@ -80,9 +82,9 @@ impl Parser
                 right: Box::new(right),
             };
         }
-        node
+        Some(node)
     }
-    fn parse_logic_expression(&mut self) -> ASTNode
+    fn parse_logic_expression(&mut self) -> Option<ASTNode>
     {
         let mut node = self.parse_logic_factor();
         while self.match_token(&[Token::LessThan, Token::LessEqualThan, Token::BiggerEqualThan,
@@ -96,7 +98,7 @@ impl Parser
                 right: Box::new(right)
             }
         }
-        node
+        Some(node)
     }
     fn parse_logic_factor(&mut self) -> ASTNode
     {
@@ -104,7 +106,7 @@ impl Parser
         {
             let logic_expr = self.parse_logic_expression();
             self.consume(&Token::LParen);
-            logic_expr
+            logic_expr.unwrap()
         }
         else if let Token::Identifier(ident) = self.advance()
         {
@@ -135,7 +137,7 @@ impl Parser
         if self.match_token(&[Token::LParen]) {
             let expr = self.parse_expression();
             self.consume(&Token::RParen);
-            expr
+            expr.unwrap()
         } else if let Token::Number(num) = self.advance() {
             ASTNode::Number(num.parse().unwrap())
         } else {
@@ -143,7 +145,7 @@ impl Parser
         }
     }
 
-    fn parse_declaration(&mut self) -> ASTNode {
+    fn parse_declaration(&mut self) -> Option<ASTNode> {
         let data_type = self.tokens[self.current].clone();
         self.advance();
         let identifier = self.peek().clone();
@@ -151,10 +153,24 @@ impl Parser
         self.advance();
         self.consume(&Token::Assignment);
         let value = self.parse_expression();
-        ASTNode::Declaration {
+        Some(ASTNode::Declaration {
             data_type,
             identifier: identifier,
-            value: Box::new(value),
+            value: Box::new(value.unwrap()),
+        })
+    }
+
+    fn parse_print(&mut self) -> Option<ASTNode>
+    {
+        self.consume(&Token::Print);
+        self.consume(&Token::LParen);
+        if let Token::StringLiteral(text) = self.advance()
+        {
+            let print_stmt = ASTNode::Print(text.clone());
+            self.consume(&Token::RParen);
+            Some(print_stmt)
+        }else{
+            panic!("Expected string literal");
         }
     }
     fn match_token(&mut self, types: &[Token]) -> bool

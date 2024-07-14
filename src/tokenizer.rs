@@ -1,10 +1,10 @@
-use std::iter::Peekable;
 use core::str::Chars;
-use crate::tokenizer;
+use std::collections::HashMap;
+use std::iter::Peekable;
+use std::string;
 
 #[derive(Debug, PartialEq, Clone)]
-pub enum Token
-{
+pub enum Token {
     Plus,
     Minus,
     Multiply,
@@ -30,7 +30,8 @@ pub enum Token
     BiggerThan,
     BiggerEqualThan,
     EqualThan,
-    DifferentThan
+    DifferentThan,
+    StringLiteral(String),
 }
 impl Token {
     pub fn tokenizer(input: &str) -> Vec<Token> {
@@ -46,6 +47,9 @@ impl Token {
                 }
                 '(' | ')' | '{' | '}' | ' ' | '\t' | '\n' | '=' | '<' | '>' | '!' => {
                     Token::tokenizer_symbols(&mut tokens, &mut chars);
+                }
+                '"' => {
+                    Token::tokenizer_string_literal(&mut tokens, &mut chars);
                 }
                 _ if ch.is_alphabetic() => {
                     Token::tokenizer_keywords(&mut tokens, &mut chars);
@@ -93,35 +97,34 @@ impl Token {
                 '\n' => tokens.push(Token::LineBreak),
                 '=' => {
                     let next_char = chars.peek().unwrap();
-                    if ch == '=' && next_char.to_owned() == '='{
+                    if ch == '=' && next_char.to_owned() == '=' {
                         chars.next();
                         tokens.push(Token::EqualThan);
-                    }
-                    else {
+                    } else {
                         tokens.push(Token::Assignment);
                     }
-                },
+                }
                 '>' => {
                     let next_char = chars.peek().unwrap();
-                    if ch == '>' && next_char.to_owned() == '='{
+                    if ch == '>' && next_char.to_owned() == '=' {
                         chars.next();
                         tokens.push(Token::BiggerEqualThan);
-                    }else {
+                    } else {
                         tokens.push(Token::BiggerThan);
                     }
                 }
                 '<' => {
                     let next_char = chars.peek().unwrap();
-                    if ch == '<' && next_char.to_owned() == '='{
+                    if ch == '<' && next_char.to_owned() == '=' {
                         chars.next();
                         tokens.push(Token::LessEqualThan);
-                    }else {
+                    } else {
                         tokens.push(Token::LessThan);
                     }
                 }
                 '!' => {
                     let next_char = chars.peek().unwrap();
-                    if ch == '!' && next_char.to_owned() == '='{
+                    if ch == '!' && next_char.to_owned() == '=' {
                         chars.next();
                         tokens.push(Token::DifferentThan);
                     }
@@ -131,7 +134,10 @@ impl Token {
         }
     }
 
-    fn tokenizer_keywords(tokens: &mut Vec<Token>, chars: &mut std::iter::Peekable<std::str::Chars>) {
+    fn tokenizer_keywords(
+        tokens: &mut Vec<Token>,
+        chars: &mut std::iter::Peekable<std::str::Chars>,
+    ) {
         let mut ident = String::new();
         while let Some(&ch) = chars.peek() {
             if ch.is_alphanumeric() {
@@ -148,7 +154,23 @@ impl Token {
             "string" => tokens.push(Token::StringType),
             "integer" => tokens.push(Token::IntegerType),
             "boolean" => tokens.push(Token::BooleanType),
-            _ =>  tokens.push(Token::Identifier(ident)),
+            "print" => tokens.push(Token::Print),
+            _ => tokens.push(Token::Identifier(ident)),
         }
+    }
+
+    fn tokenizer_string_literal(tokens: &mut Vec<Token>, chars: &mut Peekable<Chars>) {
+        let mut string_literal = String::new();
+        chars.next();
+        while let Some(&ch) = chars.peek() {
+            if ch == '"' {
+                chars.next();
+                break;
+            } else {
+                string_literal.push(ch);
+                chars.next();
+            }
+        }
+        tokens.push(Token::StringLiteral(string_literal));
     }
 }

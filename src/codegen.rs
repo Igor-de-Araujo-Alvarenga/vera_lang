@@ -42,6 +42,9 @@ pub fn generate_declaration(tree: &ASTNode) -> String
                         c_code.push_str(&format!("{} {} = {};\n", data_type_str, identifier_str, value_str));
                         c_code.push_str(&format!("printf(\"%d\",{}); \n", identifier_str));
                     }
+                    ASTNode::Print(text) => {
+                        c_code.push_str(&format!("printf(\"%s\", \"{}\"); \n", text))
+                    }
                     ASTNode::BinaryOp { left, op, right } => {
                         let left_code = to_c_code(*left.clone());
                         let operator = token_to_c_math_operator(op);
