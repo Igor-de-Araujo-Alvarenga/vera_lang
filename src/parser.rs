@@ -46,15 +46,92 @@ impl Parser
     {
         Parser { tokens, current: 0, symbol_table: HashMap::new() }
     }
-    pub fn parse(&mut self) -> ASTNode
+
+    fn parse_and_push<F>(&mut self, body: &mut Vec<ASTNode>, token: Token, parse_fn: F)
+    where
+        F: Fn(&mut Self) -> Option<ASTNode>,
     {
-        if self.match_token(&[Token::Main]) {
-            self.parse_main()
-        } else {
-            self.parse_expression().unwrap()
+        if self.peek() == &token {
+            if let Some(node) = parse_fn(self) {
+                body.push(node);
+            }
         }
     }
-    fn parse_main(&mut self) -> ASTNode
+    pub fn parse(&mut self) -> ASTNode {
+        self.consume(&Token::Main);
+        self.consume(&Token::LParen);
+        self.consume(&Token::RParen);
+        self.consume(&Token::LBrace);
+        let mut body = Vec::new();
+        while !self.check(&Token::RBrace) {
+            self.parse_and_push(&mut body, Token::Print, Self::parse_print);
+            self.parse_and_push(&mut body, Token::If, Self::parse_if_condition);
+            self.parse_and_push(&mut body, Token::ElseIf, Self::parse_else_if_condition);
+            self.parse_and_push(&mut body, Token::Else, Self::parse_else_condition);
+            self.parse_and_push(&mut body, Token::StringType, Self::parse_declaration);
+            self.parse_and_push(&mut body, Token::IntegerType, Self::parse_declaration);
+            self.parse_and_push(&mut body, Token::BooleanType, Self::parse_declaration);
+        }
+        self.consume(&Token::RBrace);
+        ASTNode::Main { body }
+    }
+
+    fn parse_if_condition(&mut self) -> Option<ASTNode> {
+        let mut if_ast = Vec::new();
+        self.consume(&Token::If);
+        let logic_expression = self.parse_logic_expression();
+        if_ast.push(logic_expression.unwrap());
+        self.consume(&Token::LBrace);
+        while !self.check(&Token::RBrace) {
+            self.parse_and_push(&mut if_ast, Token::Print, Self::parse_print);
+            self.parse_and_push(&mut if_ast, Token::If, Self::parse_if_condition);
+            self.parse_and_push(&mut if_ast, Token::ElseIf, Self::parse_else_if_condition);
+            self.parse_and_push(&mut if_ast, Token::Else, Self::parse_else_condition);
+            self.parse_and_push(&mut if_ast, Token::StringType, Self::parse_declaration);
+            self.parse_and_push(&mut if_ast, Token::IntegerType, Self::parse_declaration);
+            self.parse_and_push(&mut if_ast, Token::BooleanType, Self::parse_declaration);
+        }
+        self.consume(&Token::RBrace);
+        Some(ASTNode::If { block: if_ast })
+    }
+
+    fn parse_else_if_condition(&mut self) -> Option<ASTNode> {
+        let mut ast = Vec::new();
+        self.consume(&Token::ElseIf);
+        let logic_expression = self.parse_logic_expression();
+        ast.push(logic_expression.unwrap());
+        self.consume(&Token::LBrace);
+        while !self.check(&Token::RBrace) {
+            self.parse_and_push(&mut ast, Token::Print, Self::parse_print);
+            self.parse_and_push(&mut ast, Token::If, Self::parse_if_condition);
+            self.parse_and_push(&mut ast, Token::ElseIf, Self::parse_else_if_condition);
+            self.parse_and_push(&mut ast, Token::Else, Self::parse_else_condition);
+            self.parse_and_push(&mut ast, Token::StringType, Self::parse_declaration);
+            self.parse_and_push(&mut ast, Token::IntegerType, Self::parse_declaration);
+            self.parse_and_push(&mut ast, Token::BooleanType, Self::parse_declaration);
+        }
+        self.consume(&Token::RBrace);
+        Some(ASTNode::ElseIf { block: ast })
+    }
+
+    fn parse_else_condition(&mut self) -> Option<ASTNode> {
+        let mut else_ast = Vec::new();
+        self.consume(&Token::Else);
+        self.consume(&Token::LBrace);
+        while !self.check(&Token::RBrace) {
+            self.parse_and_push(&mut else_ast, Token::Print, Self::parse_print);
+            self.parse_and_push(&mut else_ast, Token::If, Self::parse_if_condition);
+            self.parse_and_push(&mut else_ast, Token::ElseIf, Self::parse_else_if_condition);
+            self.parse_and_push(&mut else_ast, Token::Else, Self::parse_else_condition);
+            self.parse_and_push(&mut else_ast, Token::StringType, Self::parse_declaration);
+            self.parse_and_push(&mut else_ast, Token::IntegerType, Self::parse_declaration);
+            self.parse_and_push(&mut else_ast, Token::BooleanType, Self::parse_declaration);
+        }
+        self.consume(&Token::RBrace);
+        Some(ASTNode::Else { block: else_ast })
+    }
+
+    fn parse_main2(&mut self) -> ASTNode
     {
         self.consume(&Token::LParen);
         self.consume(&Token::RParen);
@@ -247,7 +324,7 @@ impl Parser
         Some(print_stmt)
     }
 
-    fn parse_if_condition(&mut self) -> Option<ASTNode>
+    fn parse_if_condition1(&mut self) -> Option<ASTNode>
     {
         let mut if_ast = Vec::new();
         self.consume(&Token::If);
@@ -292,7 +369,7 @@ impl Parser
         })
     }
 
-    fn parse_else_if_condition(&mut self) -> Option<ASTNode>
+    fn parse_else_if_condition2(&mut self) -> Option<ASTNode>
     {
         let mut ast = Vec::new();
         self.consume(&Token::ElseIf);
@@ -337,7 +414,7 @@ impl Parser
         })
     }
 
-    fn parse_else_condition(&mut self) -> Option<ASTNode>
+    fn parse_else_condition2(&mut self) -> Option<ASTNode>
     {
         let mut else_ast = Vec::new();
         self.consume(&Token::Else);
