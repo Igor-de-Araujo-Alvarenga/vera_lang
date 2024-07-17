@@ -39,8 +39,8 @@ fn main() {
             let tokens: Vec<Token> = Token::tokenizer(vera_lang);
             let mut parser = Parser::new(tokens.clone());
             let ast = Parser::parse(&mut parser);
-            let c_code = generate_code(&ast);
             println!("{:?}", ast);
+            let c_code = generate_code(&ast, &parser.symbol_table);
             println!("{:?}", c_code);
             save_to_file("./build/vera.c", &c_code).expect("Unable to save C code");
             compile_with_gcc("./build/vera.c", "./build/vera").expect("GCC compilation failed");

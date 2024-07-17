@@ -1,4 +1,11 @@
 main()
 {
-   print("ola mundo")
+    string mensagem = "deu certo"
+    if(1 != 1)
+    {
+       print(mensagem)
+    }else
+    {
+        print("deu errado")
+    }
 }

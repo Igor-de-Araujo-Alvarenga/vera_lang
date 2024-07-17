@@ -93,8 +93,7 @@ impl Token {
                 ')' => tokens.push(Token::RParen),
                 '{' => tokens.push(Token::LBrace),
                 '}' => tokens.push(Token::RBrace),
-                ' ' | '\t' => {}
-                '\n' => tokens.push(Token::LineBreak),
+                ' ' | '\t' | '\n' => {},
                 '=' => {
                     let next_char = chars.peek().unwrap();
                     if ch == '=' && next_char.to_owned() == '=' {
@@ -150,6 +149,7 @@ impl Token {
         match ident.as_str() {
             "main" => tokens.push(Token::Main),
             "if" => tokens.push(Token::If),
+            "elseif" => tokens.push(Token::ElseIf),
             "else" => tokens.push(Token::Else),
             "string" => tokens.push(Token::StringType),
             "integer" => tokens.push(Token::IntegerType),
