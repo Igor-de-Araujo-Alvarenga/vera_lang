@@ -16,6 +16,8 @@ pub enum Token {
     Print,
     RBrace,
     LBrace,
+    LBracket,
+    RBracket,
     LineBreak,
     If,
     Else,
@@ -24,6 +26,7 @@ pub enum Token {
     StringType,
     IntegerType,
     BooleanType,
+    ArrayType,
     Assignment,
     LessThan,
     LessEqualThan,
@@ -32,6 +35,11 @@ pub enum Token {
     EqualThan,
     DifferentThan,
     StringLiteral(String),
+    Increment,
+    Decrement,
+    For,
+    Semicolon,
+    Comma
 }
 impl Token {
     pub fn tokenizer(input: &str) -> Vec<Token> {
@@ -45,7 +53,7 @@ impl Token {
                 '+' | '-' | '*' | '/' => {
                     Token::tokenizer_math_operators(&mut tokens, &mut chars);
                 }
-                '(' | ')' | '{' | '}' | ' ' | '\t' | '\n' | '=' | '<' | '>' | '!' => {
+                ',' | '[' | ']' | ';' | '(' | ')' | '{' | '}' | ' ' | '\t' | '\n' | '=' | '<' | '>' | '!' => {
                     Token::tokenizer_symbols(&mut tokens, &mut chars);
                 }
                 '"' => {
@@ -77,8 +85,24 @@ impl Token {
     pub fn tokenizer_math_operators(tokens: &mut Vec<Token>, chars: &mut Peekable<Chars>) {
         if let Some(ch) = chars.next() {
             match ch {
-                '+' => tokens.push(Token::Plus),
-                '-' => tokens.push(Token::Minus),
+                '+' => {
+                    let next_char = chars.peek().unwrap();
+                    if ch == '+' && next_char.to_owned() == '+' {
+                        chars.next();
+                        tokens.push(Token::Increment);
+                    } else {
+                        tokens.push(Token::Plus);
+                    }
+                },
+                '-' => {
+                    let next_char = chars.peek().unwrap();
+                    if ch == '-' && next_char.to_owned() == '-' {
+                        chars.next();
+                        tokens.push(Token::Decrement);
+                    } else {
+                        tokens.push(Token::Minus);
+                    }
+                },
                 '*' => tokens.push(Token::Multiply),
                 '/' => tokens.push(Token::Divide),
                 _ => (),
@@ -89,10 +113,14 @@ impl Token {
     pub fn tokenizer_symbols(tokens: &mut Vec<Token>, chars: &mut Peekable<Chars>) {
         if let Some(ch) = chars.next() {
             match ch {
+                '[' => tokens.push(Token::LBracket),
+                ']' => tokens.push(Token::RBracket),
                 '(' => tokens.push(Token::LParen),
                 ')' => tokens.push(Token::RParen),
                 '{' => tokens.push(Token::LBrace),
                 '}' => tokens.push(Token::RBrace),
+                ';' => tokens.push(Token::Semicolon),
+                ',' => tokens.push(Token::Comma),
                 ' ' | '\t' | '\n' => {},
                 '=' => {
                     let next_char = chars.peek().unwrap();
@@ -155,6 +183,8 @@ impl Token {
             "integer" => tokens.push(Token::IntegerType),
             "boolean" => tokens.push(Token::BooleanType),
             "print" => tokens.push(Token::Print),
+            "for" => tokens.push(Token::For),
+            "array" => tokens.push(Token::ArrayType),
             _ => tokens.push(Token::Identifier(ident)),
         }
     }

@@ -1,0 +1,15 @@
+main()
+{
+    for(integer contador = 1; contador <= 10; contador++)
+    {
+        if(contador == 5)
+        {
+            print("Cincooooooooo \n")
+        }else
+        {
+            print("numero: ")
+            print(contador)
+            print("\n")
+        }
+    }
+}
