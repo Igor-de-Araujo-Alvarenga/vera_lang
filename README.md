@@ -2,7 +2,7 @@
 This personal project is focused on exploring and mastering various aspects of computer science and software development by creating a programming language, along with its compiler and code generator. The primary goal is to deepen my understanding of these topics through practical, hands-on experience.
 
 # get started
-  - [dowload exetable](https://github.com/Igor-de-Araujo-Alvarenga/vera_lang/commit/092eb984eb4c632330e415102be18f0aeb7387e2#diff-f296c65b241bc9f3b18c699d27ec0fb4edf8981a42e2c3b19848a535d92ffea1)
+  - [dowload executable](https://github.com/Igor-de-Araujo-Alvarenga/vera_lang/commit/092eb984eb4c632330e415102be18f0aeb7387e2#diff-f296c65b241bc9f3b18c699d27ec0fb4edf8981a42e2c3b19848a535d92ffea1)
   - add a path to executable;
   - execute command on terminal: 
 ```
