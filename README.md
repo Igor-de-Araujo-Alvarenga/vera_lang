@@ -44,19 +44,19 @@ vera -r <namefile.vera>
     }
     ```
   - else
-  ```
-    else
-    {
-    }
-  ```
+    ```
+      else
+      {
+      }
+    ```
 - Arithmetic expressions:
   - integer + integer
   - integer - integer
   - integer / integer
   - integer * integer
-```
-(1 + 2 - (3 * 4) / 2)
-```
+  ```
+  (1 + 2 - (3 * 4) / 2)
+  ```
 - Logic expression:
   - integer == integer
   - integer > integer
@@ -64,9 +64,9 @@ vera -r <namefile.vera>
   - integer <= integer
   - integer < integer
   - integer != integer  
-```
-(2 == 2)
-```
+  ```
+  (2 == 2)
+  ```
 - Increment and decrement
   - integer++
   - integer--
@@ -75,4 +75,8 @@ vera -r <namefile.vera>
 for(integer count = 0; count == 20; count++)
 {
 }
+```
+- Print screen function
+```
+print("hello world")
 ```
